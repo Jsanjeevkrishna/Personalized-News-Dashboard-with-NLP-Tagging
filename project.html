@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP News Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .news-card:hover .news-image {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            line-height: 2.5;
+        }
+        .tag-cloud a {
+            margin: 0.25rem;
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+        }
+        .tag-cloud a:hover {
+            transform: scale(1.1);
+        }
+        .skeleton-loader {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+        .sentiment-positive {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+        }
+        .sentiment-negative {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+        }
+        .sentiment-neutral {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">NLP News Dashboard</h1>
+                <p class="text-gray-600">Personalized news with AI-powered insights</p>
+            </div>
+            <div class="flex items-center space-x-4 w-full md:w-auto">
+                <div class="relative flex-grow md:flex-grow-0">
+                    <input type="text" placeholder="Search news..." class="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-sync-alt mr-2"></i> Refresh
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- User Profile -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-user text-blue-500 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Welcome back,</h3>
+                            <p class="text-blue-600 font-medium">Alex Johnson</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Personalization:</span>
+                            <span class="font-medium">85% match</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topics Cloud -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">Your Topics</h3>
+                    <div class="tag-cloud">
+                        <a href="#" class="bg-blue-100 text-blue-800">Technology</a>
+                        <a href="#" class="bg-green-100 text-green-800">Science</a>
+                        <a href="#" class="bg-purple-100 text-purple-800">AI</a>
+                        <a href="#" class="bg-yellow-100 text-yellow-800">Business</a>
+                        <a href="#" class="bg-red-100 text-red-800">Politics</a>
+                        <a href="#" class="bg-indigo-100 text-indigo-800">Health</a>
+                        <a href="#" class="bg-pink-100 text-pink-800">Entertainment</a>
+                        <a href="#" class="bg-gray-100 text-gray-800">World</a>
+                    </div>
+                </div>
+
+                <!-- Sentiment Analysis -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">News Sentiment</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Positive</span>
+                            <span class="ml-auto text-sm font-medium">42%</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Neutral</span>
+                            <span class="ml-auto text-sm font-medium">35%</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                            <span class="text-sm text-gray-600">Negative</span>
+                            <span class="ml-auto text-sm font-medium">23%</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full flex">
+                            <div class="bg-green-500" style="width: 42%"></div>
+                            <div class="bg-blue-500" style="width: 35%"></div>
+                            <div class="bg-red-500" style="width: 23%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Featured News -->
+                <div class="bg-white rounded-xl shadow overflow-hidden">
+                    <div class="p-6 pb-0">
+                        <h2 class="text-xl font-bold text-gray-800">Featured Story</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Breaking</span>
+                                    <span class="text-sm text-gray-500">2 hours ago</span>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">AI Breakthrough Could Revolutionize Healthcare Diagnostics</h3>
+                                <p class="text-gray-600 mb-4">Researchers have developed a new AI system that can detect early signs of diseases with 95% accuracy, potentially saving millions of lives through early intervention.</p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">Healthcare</span>
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">AI</span>
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">Science</span>
+                                </div>
+                                <div class="sentiment-positive p-3 rounded-lg mb-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-smile text-green-500 mr-2"></i>
+                                        <span class="text-sm font-medium">Positive Sentiment (0.82)</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">The article expresses optimism about technological advancements in healthcare.</p>
+                                </div>
+                                <button class="text-blue-600 font-medium flex items-center">
+                                    Read full story <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                            <div class="md:col-span-1">
+                                <div class="h-full rounded-lg overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="AI Healthcare" class="w-full h-full object-cover rounded-lg news-image transition-transform">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Categories -->
+                <div class="flex overflow-x-auto pb-2 space-x-2">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-full whitespace-nowrap">All News</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">Technology</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">Business</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">Science</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">Politics</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">Health</button>
+                    <button class="px-4 py-2 bg-white border rounded-full whitespace-nowrap hover:bg-gray-100">World</button>
+                </div>
+
+                <!-- News Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="news-grid">
+                    <!-- News cards will be loaded here -->
+                </div>
+
+                <!-- Loading Skeleton -->
+                <div id="loading-skeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl shadow overflow-hidden skeleton-loader">
+                        <div class="h-48 bg-gray-200"></div>
+                        <div class="p-4 space-y-3">
+                            <div class="h-6 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-8 bg-gray-200 rounded w-1/2 mt-4"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow overflow-hidden skeleton-loader">
+                        <div class="h-48 bg-gray-200"></div>
+                        <div class="p-4 space-y-3">
+                            <div class="h-6 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-8 bg-gray-200 rounded w-1/2 mt-4"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow overflow-hidden skeleton-loader">
+                        <div class="h-48 bg-gray-200"></div>
+                        <div class="p-4 space-y-3">
+                            <div class="h-6 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                            <div class="h-8 bg-gray-200 rounded w-1/2 mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="flex justify-center mt-8">
+                    <button id="load-more" class="bg-white border border-blue-500 text-blue-500 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium">
+                        Load More Stories
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample news data with NLP tags
+            const newsData = [
+                {
+                    id: 1,
+                    title: "Global Tech Summit Announces Revolutionary Quantum Computing Breakthrough",
+                    summary: "Scientists unveil a quantum computer that can solve complex problems in seconds that would take traditional supercomputers years.",
+                    image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "45 mins ago",
+                    tags: ["Technology", "Quantum Computing", "Innovation"],
+                    sentiment: "positive",
+                    sentimentScore: 0.78,
+                    source: "Tech Today"
+                },
+                {
+                    id: 2,
+                    title: "Climate Change Report Warns of Irreversible Damage by 2030",
+                    summary: "New UN report indicates we have less than a decade to prevent catastrophic climate change effects.",
+                    image: "https://images.unsplash.com/photo-1617791160536-598cf32026fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "2 hours ago",
+                    tags: ["Environment", "Climate", "Global"],
+                    sentiment: "negative",
+                    sentimentScore: 0.65,
+                    source: "Global News"
+                },
+                {
+                    id: 3,
+                    title: "Stock Markets Reach All-Time High Amid Economic Recovery",
+                    summary: "Global markets surge as economies show stronger than expected recovery from pandemic impacts.",
+                    image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "5 hours ago",
+                    tags: ["Business", "Economy", "Markets"],
+                    sentiment: "positive",
+                    sentimentScore: 0.72,
+                    source: "Financial Times"
+                },
+                {
+                    id: 4,
+                    title: "New Study Reveals Benefits of Mediterranean Diet for Brain Health",
+                    summary: "Research confirms significant cognitive benefits for older adults following Mediterranean eating patterns.",
+                    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "1 day ago",
+                    tags: ["Health", "Nutrition", "Science"],
+                    sentiment: "neutral",
+                    sentimentScore: 0.45,
+                    source: "Health Journal"
+                },
+                {
+                    id: 5,
+                    title: "Tech Giant Faces Backlash Over Privacy Concerns",
+                    summary: "Major technology company under fire for allegedly collecting user data without proper consent.",
+                    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "1 day ago",
+                    tags: ["Technology", "Privacy", "Regulation"],
+                    sentiment: "negative",
+                    sentimentScore: 0.68,
+                    source: "Digital Privacy News"
+                },
+                {
+                    id: 6,
+                    title: "SpaceX Successfully Launches Next Generation Satellite Network",
+                    summary: "Elon Musk's company expands global internet coverage with latest satellite deployment.",
+                    image: "https://images.unsplash.com/photo-1454789548928-9a8b0cca7eaf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "2 days ago",
+                    tags: ["Space", "Technology", "Innovation"],
+                    sentiment: "positive",
+                    sentimentScore: 0.81,
+                    source: "Space Exploration Daily"
+                }
+            ];
+
+            // Function to render news cards
+            function renderNewsCards(newsItems) {
+                const newsGrid = document.getElementById('news-grid');
+                newsGrid.innerHTML = '';
+
+                newsItems.forEach(news => {
+                    let sentimentClass = '';
+                    let sentimentIcon = '';
+                    
+                    if (news.sentiment === 'positive') {
+                        sentimentClass = 'sentiment-positive';
+                        sentimentIcon = 'fa-smile';
+                    } else if (news.sentiment === 'negative') {
+                        sentimentClass = 'sentiment-negative';
+                        sentimentIcon = 'fa-frown';
+                    } else {
+                        sentimentClass = 'sentiment-neutral';
+                        sentimentIcon = 'fa-meh';
+                    }
+
+                    const newsCard = document.createElement('div');
+                    newsCard.className = 'bg-white rounded-xl shadow overflow-hidden news-card';
+                    newsCard.innerHTML = `
+                        <div class="h-48 overflow-hidden">
+                            <img src="${news.image}" alt="${news.title}" class="w-full h-full object-cover news-image transition-transform">
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-sm text-gray-500">${news.time}</span>
+                                <span class="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded">${news.source}</span>
+                            </div>
+                            <h3 class="font-bold text-gray-800 mb-2 line-clamp-2">${news.title}</h3>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">${news.summary}</p>
+                            
+                            <div class="${sentimentClass} p-2 rounded-lg mb-3">
+                                <div class="flex items-center">
+                                    <i class="fas ${sentimentIcon} ${news.sentiment === 'positive' ? 'text-green-500' : news.sentiment === 'negative' ? 'text-red-500' : 'text-blue-500'} mr-2"></i>
+                                    <span class="text-xs font-medium">${news.sentiment} sentiment (${news.sentimentScore.toFixed(2)})</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                ${news.tags.map(tag => `
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">${tag}</span>
+                                `).join('')}
+                            </div>
+                            <button class="text-blue-600 text-sm font-medium flex items-center">
+                                Read more <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    newsGrid.appendChild(newsCard);
+                });
+            }
+
+            // Simulate loading data
+            setTimeout(() => {
+                document.getElementById('loading-skeleton').style.display = 'none';
+                renderNewsCards(newsData);
+            }, 1500);
+
+            // Refresh button functionality
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                document.getElementById('loading-skeleton').style.display = 'grid';
+                document.getElementById('news-grid').innerHTML = '';
+                
+                setTimeout(() => {
+                    document.getElementById('loading-skeleton').style.display = 'none';
+                    // In a real app, you would fetch new data here
+                    renderNewsCards(newsData);
+                }, 1000);
+            });
+
+            // Load more functionality
+            document.getElementById('load-more').addEventListener('click', function() {
+                const button = this;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    // Simulate loading more data
+                    const moreNews = [
+                        {
+                            id: 7,
+                            title: "Renewable Energy Investments Surge to Record Highs",
+                            summary: "Global investments in clean energy technologies have reached unprecedented levels as countries accelerate transition.",
+                            image: "https://images.unsplash.com/photo-1508514177221-188e1df82060?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                            time: "3 days ago",
+                            tags: ["Energy", "Environment", "Business"],
+                            sentiment: "positive",
+                            sentimentScore: 0.76,
+                            source: "Green Energy Report"
+                        },
+                        {
+                            id: 8,
+                            title: "Cybersecurity Threats Increase by 300% in Past Year",
+                            summary: "Businesses and governments face unprecedented digital security challenges according to new report.",
+                            image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                            time: "4 days ago",
+                            tags: ["Technology", "Security", "Business"],
+                            sentiment: "negative",
+                            sentimentScore: 0.61,
+                            source: "Cyber Security News"
+                        }
+                    ];
+                    
+                    renderNewsCards([...newsData, ...moreNews]);
+                    button.innerHTML = 'Load More Stories';
+                    button.disabled = false;
+                }, 1200);
+            });
+        });
+    </script>
+</body>
+</html>
